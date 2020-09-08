@@ -24,10 +24,12 @@
 #include <TasmotaSerial.h>
 
 #define TM_MODBUS_BAUDRATE           9600   // Default baudrate
+#define RS485_TRANSMIT               HIGH
+#define RS485_RECEIVE                LOW
 
 class TasmotaModbus : public TasmotaSerial {
   public:
-    TasmotaModbus(int receive_pin, int transmit_pin);
+    TasmotaModbus(int receive_pin, int transmit_pin, int tx_enable_pin=99);
     virtual ~TasmotaModbus() {}
 
     int Begin(long speed = TM_MODBUS_BAUDRATE, int stop_bits = 1);
@@ -59,6 +61,7 @@ class TasmotaModbus : public TasmotaSerial {
   private:
     uint8_t mb_address;
     uint8_t mb_len;
+    int _tx_enable_pin;
 };
 
 #endif  // TasmotaModbus_h

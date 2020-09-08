@@ -19,9 +19,14 @@
 
 #include "TasmotaModbus.h"
 
-TasmotaModbus::TasmotaModbus(int receive_pin, int transmit_pin) : TasmotaSerial(receive_pin, transmit_pin, 1)
+TasmotaModbus::TasmotaModbus(int receive_pin, int transmit_pin, int tx_enable_pin) : TasmotaSerial(receive_pin, transmit_pin, 1)
 {
   mb_address = 0;
+  _tx_enable_pin = tx_enable_pin;
+  if(_tx_enable_pin<99) {
+    digitalWrite(_tx_enable_pin, RS485_RECEIVE);
+    pinMode(_tx_enable_pin, OUTPUT);
+  }  
 }
 
 uint16_t CalculateCRC(uint8_t *frame, uint8_t num)
@@ -70,7 +75,14 @@ void TasmotaModbus::Send(uint8_t device_address, uint8_t function_code, uint16_t
   frame[7] = (uint8_t)(crc >> 8);
 
   flush();
-  write(frame, sizeof(frame));
+  if (_tx_enable_pin<99) {
+    digitalWrite(_tx_enable_pin, RS485_TRANSMIT);
+    write(frame, sizeof(frame));
+    digitalWrite(_tx_enable_pin, RS485_RECEIVE);
+  }
+  else {
+    write(frame, sizeof(frame));
+  }
 }
 
 bool TasmotaModbus::ReceiveReady()
